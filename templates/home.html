@@ -23,7 +23,12 @@
       <div class="card-body">
         <h5 class="card-title"> Positions</h5>
         <p class="card-text"> 
-          {% include url_for('positions.html', asset=asset.id) %}          
+          <ul>
+              {% for position in load_positions_per_asset_from_db(asset.id) %}
+                  <li>{{ position.date_created.strftime('%d-%m-%Y') }} : 
+                      {{ '{0:,.4f}'.format(position.size) }}</li>
+              {% endfor %}
+          </ul>       
         </p>
       </div>
     </div>
@@ -31,3 +36,4 @@
    
   </body>
 </html>
+
