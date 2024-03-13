@@ -11,13 +11,20 @@
     <h1>Investment Strategies</h1>
     
     {% for asset in assets %}
-    <div class="card text-bg-primary mb-3" style="max-width: 18rem;">
+    <div class="card text-bg-primary mb-3" style="max-width: 24rem;">
       <div class="card-header row"> 
         <div class="col-2">
           <img src="{{ asset.image_file }}"  style="height: 35px;" alt="..."> 
         </div>
-        <div class="col-10 align-self-center">
+        <div class="col-6 align-self-center">
           {{asset.symbol}} - {{asset.name}} 
+        </div>
+        <div class="col-4 align-self-center text-align-left">
+          {% if asset.pair in asset_prices %}
+            {{ '{0:,.4f}'.format(asset_prices[asset.pair]) }}
+          {% else %}
+            N/A
+          {% endif %}
         </div>
       </div>  
       <div class="card-body">
