@@ -31,10 +31,24 @@
         <h5 class="card-title"> Positions</h5>
         <p class="card-text"> 
           <ul>
-              {% for position in load_positions_per_asset_from_db(asset.id) %}
-                  <li>{{ position.date_created.strftime('%d-%m-%Y') }} : 
-                      {{ '{0:,.4f}'.format(position.size) }}</li>
-              {% endfor %}
+            {% for position in load_positions_per_asset_from_db(asset.id) %}
+              <li>{{ position.date_created.strftime('%d-%m-%Y') }} : 
+                  {{ '{0:,.4f}'.format(position.size) }}
+                {% if position.id %}
+                    <form action="/split-position/{{ position.id }}" method="post">
+                      <div class="form-group">
+                          <label for="split_value">Split Value:</label>
+                          <input type="number" id="split_value" name="split_value" step="0.01">
+                      </div>
+                      <div class="form-group">
+                          <label for="split_percentage">Split Percentage:</label>
+                          <input type="number" id="split_percentage" name="split_percentage" step="0.01">
+                      </div>
+                      <button type="submit" class="btn btn-primary">Split Position</button>
+                    </form>
+                {% endif %}
+              </li>
+            {% endfor %}
           </ul>       
         </p>
       </div>

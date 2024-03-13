@@ -137,3 +137,74 @@ def get_asset_price(asset_pair):
         return None
 
 
+def split_position(position_id, split_value=None, split_percentage=None):
+  if split_value is None and split_percentage is None:
+    print("Error: Either split_value or split_percentage must be provided.")
+    return
+
+  # Connect to the database
+  with engine.connect() as connection:
+    # Retrieve the original position record
+    select_query = text(
+        "SELECT * FROM positions WHERE id = :position_id"
+    )
+    original_position = connection.execute(
+        select_query, {"position_id": position_id}
+    ).fetchone()
+
+    # Check if the original position exists
+    if original_position:
+      # Calculate the size of the new position
+      original_size = original_position[1]
+      if split_value is not None:
+          new_size = split_value
+      elif split_percentage is not None:
+          new_size = original_size * (split_percentage/100)
+      else:
+          new_size = original_size
+      
+      # Update the original position with the deducted size
+      updated_size = original_size - new_size
+      update_query = text(
+          "UPDATE positions "
+          "SET size = :updated_size "
+          "WHERE id = :position_id"
+      )
+      connection.execute(update_query, {
+          "updated_size": updated_size,
+          "position_id": position_id
+      })
+
+      # Create the new position
+      new_position_values = {
+          "size": new_size,
+          "notes": f"Position split from {position_id}",
+          "date_created": datetime.now(),
+          "asset_id": original_position[4],
+          # Set the rest of the columns to null
+          "buy_date": None,
+          "buy_price": None,
+          "sell_date": None,
+          "sell_price": None,
+          "stoploss_price": None,
+          "profit_target": None,
+          "fees": None
+      }
+
+      # Insert the new position record
+      insert_query = text(
+          "INSERT INTO positions (size, notes, date_created, asset_id, "
+          "buy_date, buy_price, sell_date, "
+          "sell_price, stoploss_price, profit_target, fees) "
+          "VALUES (:size, :notes, :date_created, :asset_id, :buy_date, "
+          ":buy_price, :sell_date, "
+          ":sell_price, :stoploss_price, :profit_target, :fees)"
+      )
+      connection.execute(insert_query, new_position_values)
+
+      # Commit the transaction
+      connection.commit()
+      
+      print("Position split successfully.")
+    else:
+      print("Original position not found.")
